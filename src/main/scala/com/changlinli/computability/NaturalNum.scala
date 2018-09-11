@@ -13,6 +13,16 @@ object NaturalNum {
       Order[Int].compare(toInt(x), toInt(y))
   }
 
+  def decrementOrFloor(x: NaturalNum): NaturalNum = x match {
+    case Succ(prev) => prev
+    case Zero => Zero
+  }
+
+  def plus(x: NaturalNum, y: NaturalNum): NaturalNum = x match {
+    case Zero => y
+    case Succ(prev) => Succ(plus(prev, y))
+  }
+
   def increment(x: NaturalNum): NaturalNum = Succ(x)
 
   def zero: NaturalNum = Zero
@@ -23,7 +33,7 @@ object NaturalNum {
     } else if (int === 0) {
       Some(Zero)
     } else {
-      fromInt(int).map(Succ.apply)
+      fromInt(int - 1).map(Succ.apply)
     }
   }
 

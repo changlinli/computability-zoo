@@ -6,6 +6,12 @@ final case class Abstraction(variable: Variable, term: LambdaTerm) extends Lambd
 final case class Application(term: LambdaTerm, toApplyTo: LambdaTerm) extends LambdaTerm
 
 object LambdaTerm {
+  def alphaEquivalent(term0: LambdaTerm, term1: LambdaTerm): Boolean =
+    fromNormalLambdaToDeBruijn(term0) == fromNormalLambdaToDeBruijn(term1)
+
+  def betaReduce(application: Application): LambdaTerm =
+    DeBruijnLambdaTerm.fromDeBruijnToNormalLambda(DeBruijnLambdaTerm.betaReduce(fromNormalLambdaToDeBruijn(application)))
+
   def prettyPrint(lambdaTerm: LambdaTerm): String = lambdaTerm match {
     case Variable(name: String) => name
     case Abstraction(variable, term) => s"λ${variable.name}.${prettyPrint(term)}"
@@ -38,6 +44,9 @@ object LambdaTerm {
   }
 
   val identityLambda: LambdaTerm = Abstraction(Variable("x"), Variable("x"))
+
+  val successorLambda: LambdaTerm =
+    Abstraction(Variable("n"), Abstraction(Variable("f"), Abstraction(Variable("x"), Application(Variable("f"), Application(Application(Variable("n"), Variable("f")), Variable("x"))))))
 
   def fromNaturalNum(num: NaturalNum): LambdaTerm =
     Abstraction(Variable("f"), Abstraction(Variable("x"), fromNaturalNumCompositionTerm(num)))
