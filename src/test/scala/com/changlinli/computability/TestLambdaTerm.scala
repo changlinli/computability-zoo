@@ -16,4 +16,14 @@ class TestLambdaTerm extends FlatSpec {
       assert(deBruijnResult === deBruijnLambda6)
     }
   }
+  "Beta reduction of the addition lambda applied to a Church encoded numeral" should "agree with addition on the natural numbers" in {
+    val naturalNum5 = NaturalNum.fromInt(5).get
+    val lambda5 = LambdaTerm.fromNaturalNum(naturalNum5)
+    val naturalNum3 = NaturalNum.fromInt(3).get
+    val lambda3 = LambdaTerm.fromNaturalNum(naturalNum3)
+    val naturalNum8 = NaturalNum.fromInt(8).get
+    val lambda8 = LambdaTerm.fromNaturalNum(naturalNum8)
+    val additionResult = LambdaTerm.betaReduce(Application(Application(LambdaTerm.additionLambda, lambda5), lambda3))
+    assert(LambdaTerm.alphaEquivalent(additionResult, lambda8))
+  }
 }

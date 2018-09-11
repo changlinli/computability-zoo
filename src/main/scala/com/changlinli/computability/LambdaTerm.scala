@@ -48,6 +48,9 @@ object LambdaTerm {
   val successorLambda: LambdaTerm =
     Abstraction(Variable("n"), Abstraction(Variable("f"), Abstraction(Variable("x"), Application(Variable("f"), Application(Application(Variable("n"), Variable("f")), Variable("x"))))))
 
+  val additionLambda: LambdaTerm =
+    Abstraction(Variable("m"), Abstraction(Variable("n"), Abstraction(Variable("f"), Abstraction(Variable("x"), Application(Application(Variable("m"), Variable("f")), Application(Application(Variable("n"), Variable("f")), Variable("x")))))))
+
   def fromNaturalNum(num: NaturalNum): LambdaTerm =
     Abstraction(Variable("f"), Abstraction(Variable("x"), fromNaturalNumCompositionTerm(num)))
 

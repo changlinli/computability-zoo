@@ -8,6 +8,9 @@ final case class DeBruijnAbstraction(term: DeBruijnLambdaTerm) extends DeBruijnL
 final case class DeBruijnApplication(term: DeBruijnLambdaTerm, toApplyTo: DeBruijnLambdaTerm) extends DeBruijnLambdaTerm
 
 object DeBruijnLambdaTerm {
+  def fromNaturalNum(x: NaturalNum): DeBruijnLambdaTerm =
+    LambdaTerm.fromNormalLambdaToDeBruijn(LambdaTerm.fromNaturalNum(x))
+
   def identity: DeBruijnLambdaTerm = DeBruijnAbstraction(DeBruijnIndex(Zero))
 
   private def betaReduceThroughOnce(term: DeBruijnLambdaTerm): DeBruijnLambdaTerm = {
