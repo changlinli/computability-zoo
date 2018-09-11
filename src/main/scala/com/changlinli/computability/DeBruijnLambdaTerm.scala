@@ -1,7 +1,7 @@
 package com.changlinli.computability
 
 import cats.implicits._
-
+import org.scalacheck.Arbitrary
 sealed trait DeBruijnLambdaTerm
 final case class DeBruijnIndex(idx: NaturalNum) extends DeBruijnLambdaTerm
 final case class DeBruijnAbstraction(term: DeBruijnLambdaTerm) extends DeBruijnLambdaTerm
