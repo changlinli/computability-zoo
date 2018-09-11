@@ -7,10 +7,10 @@ final case class Application(term: LambdaTerm, toApplyTo: LambdaTerm) extends La
 
 object LambdaTerm {
   def alphaEquivalent(term0: LambdaTerm, term1: LambdaTerm): Boolean =
-    fromNormalLambdaToDeBruijn(term0) == fromNormalLambdaToDeBruijn(term1)
+    DeBruijnLambdaTerm.fromNormalLambda(term0) == DeBruijnLambdaTerm.fromNormalLambda(term1)
 
   def betaReduce(application: Application): LambdaTerm =
-    DeBruijnLambdaTerm.fromDeBruijnToNormalLambda(DeBruijnLambdaTerm.betaReduce(fromNormalLambdaToDeBruijn(application)))
+    fromDeBruijn(DeBruijnLambdaTerm.betaReduce(DeBruijnLambdaTerm.fromNormalLambda(application)))
 
   def prettyPrint(lambdaTerm: LambdaTerm): String = lambdaTerm match {
     case Variable(name: String) => name
@@ -18,29 +18,27 @@ object LambdaTerm {
     case Application(term: LambdaTerm, toApplyTo: LambdaTerm) => s"(${prettyPrint(term)} ${prettyPrint(toApplyTo)})"
   }
 
-  def fromNormalLambdaToDeBruijn(lambdaTerm: LambdaTerm): DeBruijnLambdaTerm =
-    fromNormalLambdaToDeBruijnRec(lambdaTerm, Map.empty, Zero)
+  def fromDeBruijn(deBruijnLambdaTerm: DeBruijnLambdaTerm,
+                   freshVariables: InfiniteStream[Variable] = InfiniteStream.neverEndingVars): LambdaTerm =
+    fromDeBruijnRec(deBruijnLambdaTerm, Map.empty, freshVariables)._1
 
-  private def fromNormalLambdaToDeBruijnRec(lambdaTerm: LambdaTerm,
-                                            variableBindings: Map[Variable, NaturalNum],
-                                            depth: NaturalNum): DeBruijnLambdaTerm = {
-    lambdaTerm match {
-      case variable @ Variable(_) =>
-        variableBindings.get(variable) match {
-          case Some(associatedIdx) =>
-            DeBruijnIndex(associatedIdx)
-          case None =>
-            DeBruijnIndex(Succ(depth))
-        }
-      case Abstraction(variable, appliedTerm) =>
-        val incrementedBindings = variableBindings.mapValues(NaturalNum.increment)
-        DeBruijnAbstraction(fromNormalLambdaToDeBruijnRec(appliedTerm, incrementedBindings + (variable -> Zero), Succ(depth)))
-      case Application(applier, applied) =>
-        DeBruijnApplication(
-          fromNormalLambdaToDeBruijnRec(applier, variableBindings, depth),
-          fromNormalLambdaToDeBruijnRec(applied, variableBindings, depth)
-        )
-    }
+  def fromDeBruijnRec(deBruijnLambdaTerm: DeBruijnLambdaTerm,
+                      variableIndices: Map[DeBruijnIndex, Variable],
+                      freshVariables: InfiniteStream[Variable]): (LambdaTerm, InfiniteStream[Variable]) = deBruijnLambdaTerm match {
+    case idx @ DeBruijnIndex(_) =>
+      (variableIndices.getOrElse(idx, freshVariables.head), freshVariables.tail)
+    case DeBruijnAbstraction(term) =>
+      val newVariable = freshVariables.head
+      val incrementedIndices =
+        variableIndices.map{case (DeBruijnIndex(index), variable) => DeBruijnIndex(NaturalNum.increment(index)) -> variable}
+      val (lambda, remainingFreshVariables) =
+        fromDeBruijnRec(term, incrementedIndices + (DeBruijnIndex(Zero) -> newVariable), freshVariables.tail)
+      (Abstraction(newVariable, lambda), remainingFreshVariables)
+    case DeBruijnApplication(term, toApplyTo) =>
+      val (applier, newVariables) = fromDeBruijnRec(term, variableIndices, freshVariables)
+      val (applied, newerVariables) = fromDeBruijnRec(toApplyTo, variableIndices, newVariables)
+      val lambdaResult = Application(applier, applied)
+      (lambdaResult, newerVariables)
   }
 
   val identityLambda: LambdaTerm = Abstraction(Variable("x"), Variable("x"))
