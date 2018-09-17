@@ -1,7 +1,9 @@
 package com.changlinli.computability
 
+import cats.data.NonEmptyList
 import cats.implicits._
-import org.scalacheck.Arbitrary
+
+import scala.annotation.tailrec
 sealed trait DeBruijnLambdaTerm
 final case class DeBruijnIndex(idx: NaturalNum) extends DeBruijnLambdaTerm
 final case class DeBruijnAbstraction(term: DeBruijnLambdaTerm) extends DeBruijnLambdaTerm
@@ -36,7 +38,9 @@ object DeBruijnLambdaTerm {
     }
   }
 
-  def identity: DeBruijnLambdaTerm = DeBruijnAbstraction(DeBruijnIndex(Zero))
+  val identity: DeBruijnLambdaTerm = DeBruijnAbstraction(DeBruijnIndex(Zero))
+
+  val additionLambda: DeBruijnLambdaTerm = fromNormalLambda(LambdaTerm.additionLambda)
 
   private def betaReduceThroughOnce(term: DeBruijnLambdaTerm): DeBruijnLambdaTerm = {
     term match {
@@ -112,6 +116,57 @@ object DeBruijnLambdaTerm {
     case DeBruijnIndex(idx) => NaturalNum.toInt(idx).toString
     case DeBruijnAbstraction(term) => s"λ ${prettyPrint(term)}"
     case DeBruijnApplication(term, toApplyTo) => s"(${prettyPrint(term)} ${prettyPrint(toApplyTo)})"
+  }
+
+  private def unfoldLeft[A, B](start: A)(next: A => Option[(A, B)]): List[B] = {
+    @tailrec
+    def go(x: A, xs: List[B]): List[B] = next(x) match {
+      case Some((nextState, newElem)) =>
+        go(nextState, newElem :: xs)
+      case None =>
+        xs
+    }
+    go(start, Nil)
+  }
+
+  private def unfoldRight[A, B](start: A)(next: A => Option[(B, A)]): List[B] =
+    unfoldLeft(start)(next(_).map(_.swap)).reverse
+
+  def betaReduceScan(term: DeBruijnLambdaTerm): NonEmptyList[DeBruijnLambdaTerm] = {
+    val listOfResults = unfoldRight(term){
+      currentTerm =>
+        val reductionResult = betaReduceThroughOnce(currentTerm)
+        if (reductionResult == currentTerm) None else Some((reductionResult, reductionResult))
+    }
+    NonEmptyList(term, listOfResults)
+  }
+
+  def convertToNaturalNum(lambda: DeBruijnLambdaTerm): Option[NaturalNum] = {
+    lambda match {
+      case DeBruijnAbstraction(DeBruijnAbstraction(term)) =>
+        convertToNaturalNumRec(term, Zero)
+      case DeBruijnAbstraction(_) => None
+      case DeBruijnApplication(_, _) => None
+      case DeBruijnIndex(_) => None
+    }
+  }
+
+  @tailrec
+  private def convertToNaturalNumRec(lambda: DeBruijnLambdaTerm, currentNum: NaturalNum): Option[NaturalNum] = {
+    lambda match {
+      case DeBruijnIndex(idx) =>
+        if (idx == Zero) {
+          Some(currentNum)
+        } else {
+          None
+        }
+      case DeBruijnApplication(DeBruijnIndex(Succ(Zero)), toApplyTo) =>
+        convertToNaturalNumRec(toApplyTo, Succ(currentNum))
+      case DeBruijnApplication(_, _) =>
+        None
+      case DeBruijnAbstraction(_) =>
+        None
+    }
   }
 
 }

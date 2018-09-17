@@ -19,10 +19,12 @@ object NaturalNum {
       Order[Int].compare(toInt(x), toInt(y))
   }
 
-  def decrementOrFloor(x: NaturalNum): NaturalNum = x match {
-    case Succ(prev) => prev
-    case Zero => Zero
+  def decrement(x: NaturalNum): Option[NaturalNum] = x match {
+    case Succ(prev) => Some(prev)
+    case Zero => None
   }
+
+  def decrementOrFloor(x: NaturalNum): NaturalNum = decrement(x).getOrElse(Zero)
 
   def plus(x: NaturalNum, y: NaturalNum): NaturalNum = x match {
     case Zero => y

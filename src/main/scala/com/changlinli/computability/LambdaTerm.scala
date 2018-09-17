@@ -1,5 +1,7 @@
 package com.changlinli.computability
 
+import cats.data.NonEmptyList
+
 sealed trait LambdaTerm
 final case class Variable(name: String) extends LambdaTerm
 final case class Abstraction(variable: Variable, term: LambdaTerm) extends LambdaTerm
@@ -49,8 +51,14 @@ object LambdaTerm {
   val additionLambda: LambdaTerm =
     Abstraction(Variable("m"), Abstraction(Variable("n"), Abstraction(Variable("f"), Abstraction(Variable("x"), Application(Application(Variable("m"), Variable("f")), Application(Application(Variable("n"), Variable("f")), Variable("x")))))))
 
+  val multiplicationLambda: LambdaTerm =
+    Abstraction(Variable("m"), Abstraction(Variable("n"), Abstraction(Variable("f"), Application(Variable("m"), Application(Variable("n"), Variable("f"))))))
+
   def fromNaturalNum(num: NaturalNum): LambdaTerm =
     Abstraction(Variable("f"), Abstraction(Variable("x"), fromNaturalNumCompositionTerm(num)))
+
+  def convertToNaturalNum(lambdaTerm: LambdaTerm): Option[NaturalNum] =
+    DeBruijnLambdaTerm.fromNormalLambda(lambdaTerm).|>(DeBruijnLambdaTerm.convertToNaturalNum)
 
   private def fromNaturalNumCompositionTerm(num: NaturalNum): LambdaTerm = num match {
     case Zero =>
@@ -69,5 +77,22 @@ object LambdaTerm {
       retrieveFreeVariablesRec(term, currentSet - variable)
     case Application(applier, applied) =>
       retrieveFreeVariablesRec(applier, currentSet) ++ retrieveFreeVariablesRec(applied, currentSet)
+  }
+
+  def fromArithmeticOperation(arithmeticOperation: ArithmeticOperation): LambdaTerm = arithmeticOperation match {
+    case NumLiteral(x) =>
+      LambdaTerm.fromNaturalNum(x)
+    case Plus(x, y) =>
+      Application(Application(LambdaTerm.additionLambda, fromArithmeticOperation(x)), fromArithmeticOperation(y))
+    case Multiply(x, y) =>
+      Application(Application(LambdaTerm.multiplicationLambda, fromArithmeticOperation(x)), fromArithmeticOperation(y))
+  }
+
+  def fromArithmeticOperationWithAutomaticNames(arithmeticOperation: ArithmeticOperation): LambdaTerm =
+    LambdaTerm.fromDeBruijn(DeBruijnLambdaTerm.fromNormalLambda(fromArithmeticOperation(arithmeticOperation)))
+
+
+  def betaReduceScan(term: LambdaTerm): NonEmptyList[LambdaTerm] = {
+    DeBruijnLambdaTerm.betaReduceScan(DeBruijnLambdaTerm.fromNormalLambda(term)).map(fromDeBruijn(_))
   }
 }
