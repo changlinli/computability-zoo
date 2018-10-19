@@ -82,4 +82,10 @@ object ArithmeticOperation {
 
   def calculateFromString(str: String): Option[NonEmptyList[LambdaTerm]] =
     fromString(str).map(calculateThroughLambdaTerm)
+
+  def calculateDeBruijnFromString(str: String): Option[NonEmptyList[DeBruijnLambdaTerm]] = {
+    fromString(str)
+      .map(arithmeticOperation => DeBruijnLambdaTerm.fromNormalLambda(LambdaTerm.fromArithmeticOperation(arithmeticOperation)))
+      .map(DeBruijnLambdaTerm.betaReduceScan)
+  }
 }

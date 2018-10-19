@@ -23,8 +23,8 @@ object Main extends js.JSApp {
     parNode.asInstanceOf[html.Paragraph]
   }
 
-  @JSExportTopLevel("addClickedMessage")
-  def addClickedMessage(): Unit = {
+  @JSExportTopLevel("lambdaHandler")
+  def lambdaHandler(): Unit = {
     val inputValue = document.getElementById("code-entry").asInstanceOf[html.Input].value
     val outputElement = document.getElementById("result").asInstanceOf[html.Paragraph]
     val lambdaCalculation = ArithmeticOperation.calculateFromString(inputValue)
@@ -32,13 +32,36 @@ object Main extends js.JSApp {
       .map(_.last)
       .flatMap(LambdaTerm.convertToNaturalNum)
       .map(NaturalNum.toInt)
+      .getOrElse("Oh no there was an error!")
     val finalResultString = finalResult.toString
-    val result = ArithmeticOperation.calculateFromString(inputValue)
+    val htmlString = lambdaCalculation
       .map(lambdaTerms => lambdaTerms.map(LambdaTerm.prettyPrint))
       .toList
       .flatMap(_.toList)
       .map(x => p(x))
       .::(p("Lambda Calculus Reduction Terms:"))
+      .::(p(s"Final Result: $finalResultString"))
+      .mkString("\n")
+    outputElement.innerHTML = htmlString
+  }
+
+  @JSExportTopLevel("deBruijnHandler")
+  def deBruijnHandler(): Unit = {
+    val inputValue = document.getElementById("code-entry").asInstanceOf[html.Input].value
+    val outputElement = document.getElementById("result").asInstanceOf[html.Paragraph]
+    val lambdaCalculation = ArithmeticOperation.calculateDeBruijnFromString(inputValue)
+    val finalResult = lambdaCalculation
+      .map(_.last)
+      .flatMap(DeBruijnLambdaTerm.convertToNaturalNum)
+      .map(NaturalNum.toInt)
+      .getOrElse("Oh no there was an error!")
+    val finalResultString = finalResult.toString
+    val result = lambdaCalculation
+      .map(lambdaTerms => lambdaTerms.map(DeBruijnLambdaTerm.prettyPrint))
+      .toList
+      .flatMap(_.toList)
+      .map(x => p(x))
+      .::(p("DeBruijn-Indexed Lambda Calculus Reduction Terms:"))
       .::(p(s"Final Result: $finalResultString"))
       .mkString("\n")
     outputElement.innerHTML = result

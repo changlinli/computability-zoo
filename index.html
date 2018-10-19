@@ -9,11 +9,17 @@
       This is a simple arithmetic expression (on the natural numbers) interpreter that uses the lambda calculus to do its actual calculations.
     </p>
     <p>
-      We output
+      In particular we don't delegate to hard-coded notions of "+" and "*" but instead calculate through the lambda calculus.
+    </p>
+    <p>
+      Note that unfortunately if you calculate via the normal lambda calculus the variable naming may not remain consistent across each step (e.g. x5 in one step might become x6 in another).
     </p>
     <input type="text" id="code-entry" placeholder="Try 1 + 1 * 8 + (2 + 3) * 2"/>
-    <button id="click-me-button" type="button" onclick="addClickedMessage()">
-     Calculate!
+    <button id="lambda-button" type="button" onclick="lambdaHandler()">
+     Calculate via Normal Lambda Calculus!
+    </button>
+    <button id="debruijn-button" type="button" onclick="deBruijnHandler()">
+      Calculate via DeBruijn-Indexed Lambda Calculus!
     </button>
     <div id="result">
       <p>No Result Yet!</p>
