@@ -11,7 +11,7 @@ object LambdaTerm {
   def alphaEquivalent(term0: LambdaTerm, term1: LambdaTerm): Boolean =
     DeBruijnLambdaTerm.fromNormalLambda(term0) == DeBruijnLambdaTerm.fromNormalLambda(term1)
 
-  def betaReduce(application: Application): LambdaTerm =
+  def betaReduce(application: LambdaTerm): LambdaTerm =
     fromDeBruijn(DeBruijnLambdaTerm.betaReduce(DeBruijnLambdaTerm.fromNormalLambda(application)))
 
   def prettyPrint(lambdaTerm: LambdaTerm): String = lambdaTerm match {
