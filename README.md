@@ -20,9 +20,10 @@ are not defined (maybe I'll get around to defining)
 ## Running this application
 
 For ease of use this application ships as a dirt-simple webpage. Look at the
-releases for an `index.html` and a `computability-zoo-opt.js` file. As long as
-you put both files in the same directory and open `index.html` with a web
-browser, things should work.
+[releases](https://github.com/changlinli/computability-zoo/releases/tag/v0.1.0
+"Latest release") for an `index.html` and a `computability-zoo-opt.js` file. As
+long as you put both files in the same directory and open `index.html` with a
+web browser, things should work.
 
 ## Building this application
 
