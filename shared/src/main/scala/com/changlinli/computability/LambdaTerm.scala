@@ -54,6 +54,31 @@ object LambdaTerm {
   val multiplicationLambda: LambdaTerm =
     Abstraction(Variable("m"), Abstraction(Variable("n"), Abstraction(Variable("f"), Application(Variable("m"), Application(Variable("n"), Variable("f"))))))
 
+  val yCombinator: LambdaTerm =
+    Abstraction(
+      Variable("f"),
+      Application(
+        Abstraction(
+          Variable("x"),
+          Application(
+            Variable("f"),
+            Application(
+              Variable("x"),
+              Variable("x")))),
+        Abstraction(
+          Variable("x"),
+          Application(
+            Variable("f"),
+            Application(
+              Variable("x"),
+              Variable("x"))))))
+
+  val trueLambda: LambdaTerm = Abstraction(Variable("x"), Abstraction(Variable("y"), Variable("x")))
+
+  val falseLambda: LambdaTerm = Abstraction(Variable("x"), Abstraction(Variable("y"), Variable("y")))
+
+  val isZeroLambda: LambdaTerm = Abstraction(Variable("n"), Application(Application(Variable("n"), Abstraction(Variable("x"), falseLambda)), trueLambda))
+
   def fromNaturalNum(num: NaturalNum): LambdaTerm =
     Abstraction(Variable("f"), Abstraction(Variable("x"), fromNaturalNumCompositionTerm(num)))
 

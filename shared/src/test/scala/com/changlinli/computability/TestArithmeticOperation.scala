@@ -45,7 +45,6 @@ class TestArithmeticOperation extends FlatSpec {
 
   "calculateFromString" should "calculate (1 + 2) * 3 as 9" in {
     val nineOpt = NaturalNum.fromInt(9)
-    println(ArithmeticOperation.calculateFromString("(1 + 2) * 3").toList.flatMap(_.toList).map(LambdaTerm.prettyPrint).mkString("\n"))
     assert(ArithmeticOperation.calculateFromString("(1 + 2) * 3").flatMap(_.last.|>(LambdaTerm.convertToNaturalNum)) === nineOpt)
   }
 }

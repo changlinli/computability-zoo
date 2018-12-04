@@ -26,4 +26,14 @@ class TestLambdaTerm extends FlatSpec {
     val additionResult = LambdaTerm.betaReduce(Application(Application(LambdaTerm.additionLambda, lambda5), lambda3))
     assert(LambdaTerm.alphaEquivalent(additionResult, lambda8))
   }
+  "isZeroLambda" should "should recognize zero as zero" in {
+    val zero = LambdaTerm.fromNaturalNum(NaturalNum.zero)
+    val comparisonResult = LambdaTerm.betaReduce(Application(LambdaTerm.isZeroLambda, zero))
+    assert(LambdaTerm.alphaEquivalent(comparisonResult, LambdaTerm.trueLambda))
+  }
+  it should "not recognize one as zero" in {
+    val one = LambdaTerm.fromNaturalNum(NaturalNum.fromInt(1).get)
+    val comparisonResult = LambdaTerm.betaReduce(Application(LambdaTerm.isZeroLambda, one))
+    assert(LambdaTerm.alphaEquivalent(comparisonResult, LambdaTerm.falseLambda))
+  }
 }
